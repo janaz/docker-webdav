@@ -1,14 +1,14 @@
-FROM golang:1.13 AS builder
-RUN mkdir -p /go/src/app
-WORKDIR /go/src/app
-COPY *.go /go/src/app
-RUN go get && go install -installsuffix netgo -tags netgo
+FROM golang:1.16 AS builder
+WORKDIR /go/src/webdav
+COPY . /go/src/webdav
+ENV CGO_ENABLED=0
+RUN go install
 
 FROM scratch
-COPY --from=builder /go/bin/app /
+COPY --from=builder /go/bin/webdav /
 
 ENV LISTEN :8080
 ENV ROOT /webdav
 ENV PREFIX /
 EXPOSE 8080/tcp
-ENTRYPOINT ["/app"]
+ENTRYPOINT ["/webdav"]
