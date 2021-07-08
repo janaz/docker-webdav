@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+cd "$(dirname "$0")/.."
+
+name="janaz/webdav"
+
+docker build --no-cache -t ${name} .
