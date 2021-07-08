@@ -34,21 +34,40 @@ func main() {
 			}
 		},
 	}
+	loggedWebdav := logRequestHandler(webdav)
 	mux := methodMux(map[string]http.Handler{
-		"GET":       files,
-		"OPTIONS":   webdav,
-		"PROPFIND":  webdav,
-		"PROPPATCH": webdav,
-		"MKCOL":     webdav,
-		"COPY":      webdav,
-		"MOVE":      webdav,
-		"LOCK":      webdav,
-		"UNLOCK":    webdav,
-		"DELETE":    webdav,
-		"PUT":       webdav,
+		"GET":       logRequestHandler(files),
+		"OPTIONS":   loggedWebdav,
+		"PROPFIND":  loggedWebdav,
+		"PROPPATCH": loggedWebdav,
+		"MKCOL":     loggedWebdav,
+		"COPY":      loggedWebdav,
+		"MOVE":      loggedWebdav,
+		"LOCK":      loggedWebdav,
+		"UNLOCK":    loggedWebdav,
+		"DELETE":    loggedWebdav,
+		"PUT":       loggedWebdav,
 	})
 
 	if err := http.ListenAndServe(listen, &mux); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func logRequestHandler(h http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+
+		// call the original http.Handler we're wrapping
+		h.ServeHTTP(w, r)
+
+		// gather information about request and log it
+		uri := r.URL.String()
+		method := r.Method
+		// ... more information
+		log.Printf("%s %s", method, uri)
+	}
+
+	// http.HandlerFunc wraps a function so that it
+	// implements http.Handler interface
+	return http.HandlerFunc(fn)
 }
